@@ -25,10 +25,6 @@ mongoose.connect(MONGO_URI, {
   useUnifiedTopology: true,
 })
 
-app.get('/', (req, res) => {
-  return res.send('hello world!')
-})
-
 // set favicon
 app.get('/favicon.ico', (req, res) => {
   res.status(404).send()
