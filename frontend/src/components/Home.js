@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import Card from 'react-bootstrap/Card'
 import CardGroup from 'react-bootstrap/CardGroup'
 import Button from 'react-bootstrap/Button'
+import Form from 'react-bootstrap/Form'
 
 const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -64,6 +65,26 @@ const Home = () => {
           <p className="p-0 m-0 pe-3">{`hello ${user}`}</p>
           <Button variant="light" className="me-3" size="sm" onClick={handleLogout}>LOGOUT</Button>
         </div>
+        <Card className="mx-auto chat-container d-flex flex-row shadow-sm rounded" style={{ width: '90%', height: '80vh' }}>
+          <div className="rooms-container text-center border-end" style={{ width: '30%' }}>
+            <Button className="mt-3" variant="light">Create Room</Button>
+            <div className="rooms-list">
+              <Button className="mt-2 rounded-0" style={{ width: '100%' }} variant="primary">General</Button>
+              <Button className="rounded-0" style={{ width: '100%' }} variant="primary">Food</Button>
+              <Button className="rounded-0" style={{ width: '100%' }} variant="primary">Music</Button>
+            </div>
+          </div>
+          <div className="chat" style={{ width: '70%' }}>
+            <div className="messages-container" style={{ height: '90%' }}>
+              <h5>Cindy</h5>
+              <span>Hello</span>
+            </div>
+            <div className="message-input" style={{ height: '10%' }}>
+              <Form.Control type="text" />
+              <Button>Send</Button>
+            </div>
+          </div>
+        </Card>
       </div>
     )
   }

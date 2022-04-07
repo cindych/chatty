@@ -1,9 +1,13 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const path = require('path')
+const http = require('http')
+const { Server } = require('socket.io')
 
 const port = process.env.PORT || 3000
 const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 const cookieSession = require('cookie-session')
 
 app.use(cookieSession({
@@ -25,6 +29,14 @@ mongoose.connect(MONGO_URI, {
   useUnifiedTopology: true,
 })
 
+io.on('connection', socket => {
+  console.log('a user connected')
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected')
+  })
+})
+
 // set favicon
 app.get('/favicon.ico', (req, res) => {
   res.status(404).send()
@@ -43,6 +55,6 @@ app.use((err, req, res, next) => {
 })
 
 // Start listening for requests
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Listening on port ${port}`)
 })

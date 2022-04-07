@@ -3,10 +3,13 @@ import {
   Routes, Route, Outlet, Link,
 } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import { io } from 'socket.io-client'
 
 import Home from './components/Home'
 import Login from './components/Login'
 import Signup from './components/Signup'
+
+const socket = io()
 
 const App = () => {
   return (

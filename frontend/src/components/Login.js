@@ -50,7 +50,7 @@ const Login = () => {
           </Form>
           <Card.Text className="mt-2 text-center">
             Don&apos;t have an account?&nbsp;
-            <Link to="/chat">Sign up!</Link>
+            <Link to="/signup">Sign up!</Link>
           </Card.Text>
         </Card.Body>
       </Card>
