@@ -7,9 +7,14 @@ import CardGroup from 'react-bootstrap/CardGroup'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 
+import Messages from './Messages'
+
 const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState('')
+  const [roomInput, setRoomInput] = ('')
+  const [currRoom, setCurrRoom] = useState('general')
+  const [rooms, setRooms] = useState([])
   const navigate = useNavigate()
 
   const checkUserLoggedIn = async () => {
@@ -33,6 +38,23 @@ const Home = () => {
       checkUserLoggedIn()
     } catch (err) {
       alert('Error in logging out.')
+    }
+  }
+
+  const getRooms = async () => {
+    try {
+      const { data } = await axios.get('/api/rooms')
+      setRooms(data)
+    } catch (err) {
+      alert('Error in retrieving rooms')
+    }
+  }
+
+  const createRoom = async () => {
+    try {
+      await axios.post('/api/rooms/create', { })
+    } catch (err) {
+      alert('Error in creating room')
     }
   }
 
@@ -67,17 +89,14 @@ const Home = () => {
         </div>
         <Card className="mx-auto chat-container d-flex flex-row shadow-sm rounded" style={{ width: '90%', height: '80vh' }}>
           <div className="rooms-container text-center border-end" style={{ width: '30%' }}>
-            <Button className="mt-3" variant="light">Create Room</Button>
+            <Button className="mt-3" variant="light" onClick={createRoom}>Create Room</Button>
             <div className="rooms-list">
-              <Button className="mt-2 rounded-0" style={{ width: '100%' }} variant="primary">General</Button>
-              <Button className="rounded-0" style={{ width: '100%' }} variant="primary">Food</Button>
-              <Button className="rounded-0" style={{ width: '100%' }} variant="primary">Music</Button>
+              {rooms.map(room => <Button className="mt-2 rounded-0" style={{ width: '100%' }} variant="primary" onClick={() => setCurrRoom(room.name)}>{room.name}</Button>)}
             </div>
           </div>
           <div className="chat" style={{ width: '70%' }}>
             <div className="messages-container" style={{ height: '90%' }}>
-              <h5>Cindy</h5>
-              <span>Hello</span>
+              <Messages currRoom={currRoom} />
             </div>
             <div className="message-input" style={{ height: '10%' }}>
               <Form.Control type="text" />
@@ -91,6 +110,7 @@ const Home = () => {
 
   useEffect(() => {
     checkUserLoggedIn()
+    getRooms()
   }, [])
 
   return (

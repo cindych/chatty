@@ -19,9 +19,11 @@ app.use(cookieSession({
 app.use(express.static('dist'))
 
 const accountRouter = require('./routes/account')
+const apiRouter = require('./routes/api')
 
 app.use(express.json())
 app.use('/account', accountRouter)
+app.use('/api', apiRouter)
 
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://cindych:676123@cluster0.rdvfo.mongodb.net/chatapp?retryWrites=true&w=majority'
 mongoose.connect(MONGO_URI, {
