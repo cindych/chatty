@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
@@ -7,14 +7,19 @@ import CardGroup from 'react-bootstrap/CardGroup'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 
+import { SocketContext } from './Socket'
 import Messages from './Messages'
+import Popup from './Popup'
 
 const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState('')
-  const [roomInput, setRoomInput] = ('')
-  const [currRoom, setCurrRoom] = useState('general')
+  const [modalShow, setModalShow] = useState(false)
+  const [msgInput, setMsgInput] = useState('')
+  const [currRoom, setCurrRoom] = useState('')
   const [rooms, setRooms] = useState([])
+
+  const socket = useContext(SocketContext)
   const navigate = useNavigate()
 
   const checkUserLoggedIn = async () => {
@@ -50,11 +55,20 @@ const Home = () => {
     }
   }
 
-  const createRoom = async () => {
+  const changeRoom = newRoom => {
+    if (currRoom !== newRoom) {
+      socket.emit('join room', currRoom, newRoom)
+      setCurrRoom(newRoom)
+    }
+  }
+
+  const postMessage = async () => {
     try {
-      await axios.post('/api/rooms/create', { })
+      await axios.post('/api/messages/post', { content: msgInput, room: currRoom })
+      setMsgInput('')
+      socket.emit('new msg', currRoom)
     } catch (err) {
-      alert('Error in creating room')
+      alert('Error in posting message')
     }
   }
 
@@ -89,9 +103,9 @@ const Home = () => {
         </div>
         <Card className="mx-auto chat-container d-flex flex-row shadow-sm rounded" style={{ width: '90%', height: '80vh' }}>
           <div className="rooms-container text-center border-end" style={{ width: '30%' }}>
-            <Button className="mt-3" variant="light" onClick={createRoom}>Create Room</Button>
+            <Button className="mt-3" variant="light" onClick={() => setModalShow(true)}>Create Room</Button>
             <div className="rooms-list">
-              {rooms.map(room => <Button className="mt-2 rounded-0" style={{ width: '100%' }} variant="primary" onClick={() => setCurrRoom(room.name)}>{room.name}</Button>)}
+              {rooms.map(room => <Button className="mt-2 rounded-0" key={room._id} style={{ width: '100%' }} variant="primary" onClick={() => changeRoom(room.name)}>{room.name}</Button>)}
             </div>
           </div>
           <div className="chat" style={{ width: '70%' }}>
@@ -99,11 +113,17 @@ const Home = () => {
               <Messages currRoom={currRoom} />
             </div>
             <div className="message-input" style={{ height: '10%' }}>
-              <Form.Control type="text" />
-              <Button>Send</Button>
+              <Form.Control type="text" value={msgInput} onChange={e => setMsgInput(e.target.value)} />
+              <Button onClick={postMessage} disabled={msgInput === ''}>Send</Button>
             </div>
           </div>
         </Card>
+
+        <Popup
+          show={modalShow}
+          onHide={() => setModalShow(false)}
+          getRooms={getRooms}
+        />
       </div>
     )
   }
@@ -111,6 +131,10 @@ const Home = () => {
   useEffect(() => {
     checkUserLoggedIn()
     getRooms()
+
+    socket.on('new room', () => {
+      getRooms()
+    })
   }, [])
 
   return (

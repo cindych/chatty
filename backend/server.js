@@ -10,6 +10,8 @@ const server = http.createServer(app)
 const io = new Server(server)
 const cookieSession = require('cookie-session')
 
+const { adapter: mainAdapter } = io.of('/')
+
 app.use(cookieSession({
   name: 'session',
   keys: ['pomeranian'],
@@ -36,6 +38,25 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
     console.log('user disconnected')
+  })
+
+  socket.on('join room', (origRoom, newRoom) => {
+    socket.leave(origRoom)
+    if (origRoom && origRoom !== '') {
+      socket.join(newRoom)
+    }
+    console.log(`socket ${socket.id} left room ${origRoom}`)
+    console.log(`socket ${socket.id} joined room ${newRoom}`)
+  })
+
+  socket.on('new room', () => {
+    socket.broadcast.emit('new room')
+  })
+
+  socket.on('new msg', room => {
+    // const chat = io.sockets.in(room)
+    // console.log(chat)
+    io.to(room).emit('new msg')
   })
 })
 
