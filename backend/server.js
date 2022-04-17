@@ -10,6 +10,8 @@ const server = http.createServer(app)
 const io = new Server(server)
 const cookieSession = require('cookie-session')
 
+const { adapter: mainAdapter } = io.of('/')
+
 app.use(cookieSession({
   name: 'session',
   keys: ['pomeranian'],
@@ -34,8 +36,48 @@ mongoose.connect(MONGO_URI, {
 io.on('connection', socket => {
   console.log('a user connected')
 
+  // store user info in socket
+  socket.on('set username', user => {
+    socket.data.user = user
+  })
+
+  // socket disconnects, relay to room
+  socket.on('disconnecting', () => {
+    const { rooms } = socket
+    if (rooms.size > 1) { // socket was in another room besides its private room
+      const iterator = rooms.values()
+      iterator.next()
+      const { value: exitedRoom } = iterator.next()
+      io.to(exitedRoom).emit('a user left this room', socket.data.user)
+      console.log(`a user left this room ${exitedRoom}`)
+    }
+  })
+
   socket.on('disconnect', () => {
     console.log('user disconnected')
+  })
+
+  // socket joins a new room
+  socket.on('join room', (origRoom, newRoom) => {
+    if (origRoom && origRoom !== '') {
+      socket.leave(origRoom)
+      io.to(origRoom).emit('a user left this room', socket.data.user)
+      console.log(`socket ${socket.id} left room ${origRoom}`)
+    }
+    io.to(newRoom).emit('a user joined this room', socket.data.user)
+    socket.join(newRoom)
+    console.log(`socket ${socket.id} joined room ${newRoom}`)
+  })
+
+  // socket creates a new room
+  socket.on('new room', () => {
+    socket.broadcast.emit('new room')
+  })
+
+  socket.on('new msg', room => {
+    // const chat = io.sockets.in(room)
+    // console.log(chat)
+    io.to(room).emit('new msg')
   })
 })
 
