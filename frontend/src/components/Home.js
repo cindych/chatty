@@ -186,6 +186,15 @@ const Home = () => {
     )
   }
 
+  useEffect(() => {
+    checkUserLoggedIn()
+    getRooms()
+
+    socket.on('new room', () => {
+      getRooms()
+    })
+  }, [])
+
   return (
     <div className="homepage">
       {renderLoadingScreen()}

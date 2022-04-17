@@ -28,10 +28,6 @@ const Messages = ({ currRoom }) => {
     socket.on('new msg', () => {
       getMessages()
     })
-
-    socket.on('left room', () => {
-      getMessages()
-    })
   }, [])
 
   useEffect(() => {
