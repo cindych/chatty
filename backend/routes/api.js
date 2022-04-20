@@ -15,9 +15,8 @@ router.get('/rooms', async (req, res, next) => {
 })
 
 router.post('/rooms/create', async (req, res, next) => {
-  const { name } = req.body
   try {
-    await Room.create({ name, creator: req.session.username })
+    await Room.create({ name: req.body.name, creator: req.session.username })
     res.status(201).send('room was successfully created')
   } catch (e) {
     next(new Error('error in creating room'))
@@ -34,10 +33,14 @@ router.get('/messages', async (req, res, next) => {
 })
 
 router.post('/messages/post', async (req, res, next) => {
-  const { content, room } = req.body
-  const sender = req.session.username
   try {
-    await Message.create({ content, sender, room })
+    if (req.body.senderPic && req.body.senderPic !== '') {
+      await Message.create({
+        content: req.body.content, sender: req.session.username, room: req.body.room, senderPic: req.body.senderPic,
+      })
+    } else {
+      await Message.create({ content: req.body.content, sender: req.session.username, room: req.body.room })
+    }
     res.status(200).send('message was posted')
   } catch (e) {
     next(new Error('error in posting message'))

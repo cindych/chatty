@@ -10,8 +10,6 @@ const server = http.createServer(app)
 const io = new Server(server)
 const cookieSession = require('cookie-session')
 
-const { adapter: mainAdapter } = io.of('/')
-
 app.use(cookieSession({
   name: 'session',
   keys: ['pomeranian'],
@@ -19,6 +17,7 @@ app.use(cookieSession({
 }))
 
 app.use(express.static('dist'))
+app.use('/displayPics', express.static('displayPics'))
 
 const accountRouter = require('./routes/account')
 const apiRouter = require('./routes/api')
@@ -34,14 +33,13 @@ mongoose.connect(MONGO_URI, {
 })
 
 io.on('connection', socket => {
-  console.log('a user connected')
-
   // store user info in socket
   socket.on('set username', user => {
-    socket.data.user = user
+    const altSocket = socket
+    altSocket.data.user = user
   })
 
-  // socket disconnects, relay to room
+  // socket is disconnecting, relay to room
   socket.on('disconnecting', () => {
     const { rooms } = socket
     if (rooms.size > 1) { // socket was in another room besides its private room
@@ -49,12 +47,7 @@ io.on('connection', socket => {
       iterator.next()
       const { value: exitedRoom } = iterator.next()
       io.to(exitedRoom).emit('a user left this room', socket.data.user)
-      console.log(`a user left this room ${exitedRoom}`)
     }
-  })
-
-  socket.on('disconnect', () => {
-    console.log('user disconnected')
   })
 
   // socket joins a new room
@@ -62,11 +55,17 @@ io.on('connection', socket => {
     if (origRoom && origRoom !== '') {
       socket.leave(origRoom)
       io.to(origRoom).emit('a user left this room', socket.data.user)
-      console.log(`socket ${socket.id} left room ${origRoom}`)
     }
     io.to(newRoom).emit('a user joined this room', socket.data.user)
     socket.join(newRoom)
-    console.log(`socket ${socket.id} joined room ${newRoom}`)
+  })
+
+  // socket logs out
+  socket.on('logout', currRoom => {
+    if (currRoom && currRoom !== '') {
+      socket.leave(currRoom)
+      io.to(currRoom).emit('a user left this room', socket.data.user)
+    }
   })
 
   // socket creates a new room
@@ -74,10 +73,14 @@ io.on('connection', socket => {
     socket.broadcast.emit('new room')
   })
 
+  // socket has sent a new msg
   socket.on('new msg', room => {
-    // const chat = io.sockets.in(room)
-    // console.log(chat)
     io.to(room).emit('new msg')
+  })
+
+  // socket has updated display pic
+  socket.on('display pic update', () => {
+    io.emit('display pic update')
   })
 })
 
@@ -93,7 +96,6 @@ app.get('*', (req, res) => {
 
 // error handling
 app.use((err, req, res, next) => {
-  console.error(err.stack)
   res.status(500)
   res.send(`An error occurred! (${err})`)
 })

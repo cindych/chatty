@@ -5,6 +5,7 @@ const { Schema, model } = mongoose
 const msgSchema = new Schema({
   content: { type: String, required: true },
   sender: { type: String, required: true },
+  senderPic: { type: String },
   room: { type: String, required: true },
 })
 

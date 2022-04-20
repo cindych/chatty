@@ -2,7 +2,9 @@ import React, {
   useState, useContext, useEffect, useRef,
 } from 'react'
 import axios from 'axios'
-import { SocketContext } from './Socket.js'
+
+import { Person } from 'react-bootstrap-icons'
+import { SocketContext } from './Socket'
 
 const Messages = ({ currRoom }) => {
   const [msgs, setMsgs] = useState([])
@@ -28,6 +30,10 @@ const Messages = ({ currRoom }) => {
     socket.on('new msg', () => {
       getMessages()
     })
+
+    socket.on('display pic update', () => {
+      getMessages()
+    })
   }, [])
 
   useEffect(() => {
@@ -39,11 +45,11 @@ const Messages = ({ currRoom }) => {
     <>
       {
         msgs.map(msg => (
-          <div className="d-flex pt-2">
-            <svg className="my-auto" height="20" width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 128c39.77 0 72 32.24 72 72S295.8 272 256 272c-39.76 0-72-32.24-72-72S216.2 128 256 128zM256 448c-52.93 0-100.9-21.53-135.7-56.29C136.5 349.9 176.5 320 224 320h64c47.54 0 87.54 29.88 103.7 71.71C356.9 426.5 308.9 448 256 448z" />
-            </svg>
-            <p className="ms-1 p-0 m-0" key={msg._id}>
+          <div className="d-flex align-items-center pt-3" key={msg._id}>
+            { msg.senderPic
+              ? <img src={msg.senderPic} alt="user display pic" width="25px" height="25px" style={{ objectFit: 'cover', borderRadius: '10%' }} />
+              : <Person height="20px" width="20px" />}
+            <p className="ms-1 p-0 m-0">
               <b>{`${msg.sender}: `}</b>
               {msg.content}
             </p>

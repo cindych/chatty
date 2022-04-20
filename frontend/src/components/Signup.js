@@ -5,17 +5,24 @@ import axios from 'axios'
 import Card from 'react-bootstrap/Card'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
+import Alert from 'react-bootstrap/Alert'
 
 const Signup = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [showAlert, setShowAlert] = useState(false)
 
   const navigate = useNavigate()
 
   const createUser = async () => {
     try {
-      await axios.post('/account/signup', { username, password })
-      navigate('/')
+      const { data } = await axios.post('/account/signup', { username, password })
+      if (data === 'user signup was successful') {
+        setShowAlert(false)
+        navigate('/login')
+      } else {
+        setShowAlert(true)
+      }
     } catch (err) {
       alert('There was an issue with signing up. Please try again!')
     }
@@ -23,9 +30,12 @@ const Signup = () => {
 
   return (
     <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <Card className="shadow rounded p-2" style={{ width: '50%', backgroundColor: '#D8E2DC' }} border="light">
+      <Card className="shadow rounded p-2" style={{ width: '50%', backgroundColor: '#e8dcf5' }} border="light">
         <Card.Body>
           <Card.Title className="text-center">SIGNUP</Card.Title>
+          <Alert className="mb-2" show={showAlert} variant="info">
+            <p className="mb-0">User already exists. Log in or choose another username.</p>
+          </Alert>
           <Form
             onSubmit={e => {
               e.preventDefault()

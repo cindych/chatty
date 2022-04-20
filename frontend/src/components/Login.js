@@ -27,7 +27,7 @@ const Login = () => {
 
   return (
     <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <Card className="shadow rounded p-2" style={{ width: '50%', backgroundColor: '#FAE1DD' }} border="light">
+      <Card className="shadow rounded p-2" style={{ width: '50%', backgroundColor: '#e8dcf5' }} border="light">
         <Card.Body>
           <Card.Title className="text-center">LOGIN</Card.Title>
           <Form
